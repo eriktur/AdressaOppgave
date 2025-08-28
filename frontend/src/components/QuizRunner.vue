@@ -1,13 +1,13 @@
 <template>
   <div class="runner">
-    <!-- Start-skjerm -->
+
     <section v-if="phase==='intro'" class="runner-card vstack center">
       <h1 class="runner-title">{{ quiz.title }}</h1>
       <p class="muted">{{ quiz.locale }} • {{ total }} spørsmål</p>
       <button class="btn primary big" @click="start">Start quiz</button>
     </section>
 
-    <!-- Spørsmål -->
+
     <section v-else-if="phase==='playing'" class="runner-card vstack">
       <header class="runner-header spread">
         <div class="hstack" style="gap:10px;align-items:center">
@@ -56,16 +56,17 @@
       </transition>
     </section>
 
-    <!-- Resultat -->
+
     <section v-else class="runner-card vstack center">
       <h2 class="runner-title">Resultat</h2>
       <p class="bigscore">{{ correct }} / {{ total }}</p>
-      <p class="muted" v-if="correct===total">Perfekt! 🔥</p>
-      <p class="muted" v-else-if="correct/total>=0.7">Sterkt levert 💪</p>
-      <p class="muted" v-else>Godt forsøk – prøv igjen 🙂</p>
+      <p class="muted" v-if="correct===total">Perfekt!</p>
+      <p class="muted" v-else-if="correct/total>=0.7">Sterkt levert</p>
+      <p class="muted" v-else>Godt forsøk – prøv igjen </p>
       <div class="hstack center" style="gap:10px;margin-top:8px">
         <button class="btn" @click="restart">Spill igjen</button>
-        <button class="btn primary" @click="$emit('finish', { score: correct, total })">Ferdig</button>
+        <button class="btn primary" @click="finish">Ferdig</button>
+
       </div>
     </section>
   </div>
@@ -74,24 +75,26 @@
 <script setup>
 import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
 
-// props & emits
-const props = defineProps({ quiz: { type: Object, required: true } })
-defineEmits(['finish'])
 
-// state
-const phase = ref('intro') // intro | playing | done
+const props = defineProps({ quiz: { type: Object, required: true } })
+const emit = defineEmits(['finish'])
+function finish(){
+  emit('finish', { score: correct.value, total: total.value })
+}
+
+const phase = ref('intro')
 const idx = ref(0)
 const selected = ref(-1)
 const locked = ref(false)
 const correct = ref(0)
 const labels = ['1','2','3','4']
 
-// derived
+
 const total = computed(() => (props.quiz?.questions?.length ?? 0))
 const current = computed(() => props.quiz.questions[idx.value] || { options: [] })
 const isCorrect = computed(() => selected.value === current.value.answerIndex)
 
-// actions
+
 function start(){ phase.value='playing'; idx.value=0; selected.value=-1; locked.value=false; correct.value=0 }
 function select(i){ if (!locked.value) selected.value = i }
 function lockIn(){
@@ -110,7 +113,6 @@ function next(){
 }
 function restart(){ phase.value='intro'; idx.value=0; selected.value=-1; locked.value=false; correct.value=0 }
 
-// keyboard shortcuts
 function onKey(e){
   if (phase.value !== 'playing') return
   if (e.key>='1' && e.key<='4'){ select(Number(e.key)-1) }
@@ -119,7 +121,6 @@ function onKey(e){
 onMounted(()=> window.addEventListener('keydown', onKey))
 onBeforeUnmount(()=> window.removeEventListener('keydown', onKey))
 
-// styling helpers
 function optionClass(i){
   return [
     'opt',
@@ -165,10 +166,10 @@ function optionClass(i){
 .opt.selected{ border-color: rgba(255,255,255,.6); }
 .opt.locked{ cursor:default; }
 
-.opt-0{ background:#2ecc71; }  /* grønn */
-.opt-1{ background:#3498db; }  /* blå   */
-.opt-2{ background:#f1c40f; }  /* gul   */
-.opt-3{ background:#e74c3c; }  /* rød   */
+.opt-0{ background:#2ecc71; }
+.opt-1{ background:#3498db; }
+.opt-2{ background:#f1c40f; }
+.opt-3{ background:#e74c3c; }
 .opt.ok{ outline: 3px solid #c7ffb3; }
 .opt.wrong{ filter: grayscale(.25) brightness(.85); }
 

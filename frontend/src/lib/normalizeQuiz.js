@@ -1,10 +1,12 @@
-// src/lib/normalizeQuiz.js
+
+// Normalize a quiz object to ensure it has the correct structure and defaults
 export function normalizeQuiz(q) {
     if (!q || typeof q !== 'object') return null
     if (!Array.isArray(q.questions)) q.questions = []
     if (!q.title) q.title = 'Nyhetsquiz'
     if (!q.locale) q.locale = 'nb-NO'
 
+    // Clean up questions
     q.questions = q.questions
         .filter(x => x && x.prompt && String(x.prompt).trim())
         .map((x, i) => {
