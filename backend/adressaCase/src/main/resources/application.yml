@@ -1,0 +1,16 @@
+server:
+  port: 8080
+
+spring:
+  jackson:
+    serialization:
+      INDENT_OUTPUT: true
+  config:
+    import: optional:file:.env[.properties]
+
+    app:
+      fallbackOnParseError: false
+
+openai:
+  model: gpt-5-mini
+  timeoutSeconds: 260
