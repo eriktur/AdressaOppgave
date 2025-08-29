@@ -1,4 +1,5 @@
 <template>
+  <header-bar/>
   <div id="app">
     <main class="container vstack" style="gap:16px;">
 
@@ -7,6 +8,7 @@
           <h2 id="upload-title">Last opp artikler</h2>
           <span class="badge">Opptil 3 JSON-filer</span>
         </div>
+
 
         <!-- Dra/slipp eller velg JSON-filer -->
         <ArticleDropzone @files-parsed="onFilesParsed" />
@@ -72,6 +74,7 @@ import ArticleDropzone from './components/ArticleDropzone.vue'
 import Spinner from './components/Spinner.vue'
 import {generateQuiz} from './lib/api.js'
 import QuizRunner from './components/QuizRunner.vue'
+import HeaderBar from "./components/HeaderBar.vue";
 
 const articles = ref([])
 const num = ref(8)
@@ -102,6 +105,41 @@ function normalizeQuiz(q) {
       })
 
   return q
+}
+
+
+function mulberry32(a){
+  return function(){
+    a|=0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t ^= t + Math.imul(t ^ (t >>> 7), 61 | t);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  }
+}
+function hash(str){
+  let h = 0;
+  for (let i=0;i<str.length;i++) h = Math.imul(31, h) + str.charCodeAt(i) | 0;
+  return h >>> 0;
+}
+function shuffleQuestion(q, seedStr){
+  const rng = mulberry32(hash(seedStr || 'seed'))
+  const pairs = q.options.map((opt, i) => ({ opt, i }))
+  for (let k = pairs.length - 1; k > 0; k--){
+    const j = Math.floor(rng() * (k + 1))
+    ;[pairs[k], pairs[j]] = [pairs[j], pairs[k]]
+  }
+  const options = pairs.map(p => p.opt)
+  const answerIndex = pairs.findIndex(p => p.i === q.answerIndex)
+  return { ...q, options, answerIndex }
+}
+
+// Shuffle alle spørsmål og deres alternativer, basert på en seed (for stabil rekkefølge ved samme input)
+function shuffleQuiz(quizObj, seedBase = Date.now().toString()){
+  const base = `${seedBase}|${quizObj.title || 'quiz'}|${quizObj.meta?.createdAt || ''}`
+  return {
+    ...quizObj,
+    questions: quizObj.questions.map(q => shuffleQuestion(q, `${base}|${q.id || ''}`))
+  }
 }
 
 // ——— UI helpers ———
@@ -137,7 +175,12 @@ async function generate() {
       locale: locale.value
     }
     const data = await generateQuiz(payload)
-    quiz.value = normalizeQuiz(data)
+
+    const normalized = normalizeQuiz(data)
+    // seed: bruk createdAt dersom den finnes for stabil rekkefølge, ellers nåtiden
+    const seed = normalized?.meta?.createdAt || String(Date.now())
+    quiz.value = shuffleQuiz(normalized, seed)
+
     // scroll til quizen
     requestAnimationFrame(() => window.scrollTo({top: document.body.scrollHeight / 3, behavior: 'smooth'}))
     showToast('success', 'Quiz generert!')
@@ -152,7 +195,7 @@ async function generate() {
 
 function onFinish({score, total}) {
   showToast('success', `Ferdig! Du fikk ${score}/${total} riktig.`)
-  // Valgfritt: nullstill quizen etterpå:
+
   quiz.value = null
 }
 </script>

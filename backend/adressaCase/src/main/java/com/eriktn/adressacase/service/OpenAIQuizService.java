@@ -24,6 +24,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+
+// Tjeneste for å generere quiz ved hjelp av OpenAI API
 @Service
 public class OpenAIQuizService {
     private final ObjectMapper mapper = new ObjectMapper();
@@ -36,6 +38,8 @@ public class OpenAIQuizService {
     @Value("${app.fallbackOnParseError:true}")
     private boolean fallbackOnParseError;
 
+
+    // Konstruktør som tar API-nøkkel fra miljøvariabel
     public OpenAIQuizService(@Value("${OPENAI_API_KEY}") String apiKey) {
         if (apiKey == null || apiKey.isBlank()) {
             throw new IllegalStateException("OPENAI_API_KEY mangler (sett i .env ved siden av pom.xml)");
@@ -43,6 +47,7 @@ public class OpenAIQuizService {
         this.client = OpenAIOkHttpClient.builder().apiKey(apiKey).build();
     }
 
+    // Last system-prompt fra fil
     private String loadSystemPrompt() {
         try {
             var res = new ClassPathResource("prompts/system.txt");
@@ -50,7 +55,7 @@ public class OpenAIQuizService {
         } catch (IOException e) { return ""; }
     }
 
-    /** Hent (tekst)innhold ut av Responses API-strukturen. */
+    // Hent innhold ut av Responses API-strukturen.
     private String extractText(Response resp) {
         String txt = resp.output().stream()
                 .flatMap(item -> item.message().stream())
@@ -61,14 +66,14 @@ public class OpenAIQuizService {
         return txt == null ? "" : txt.trim();
     }
 
-    /** Enkel sjekk om streng ser ut som JSON-objekt/-array. */
+   // Enkel sjekk om en streng ser ut som JSON
     private boolean isLikelyJson(String s) {
         if (s == null) return false;
         String t = s.trim();
         return (t.startsWith("{") && t.endsWith("}")) || (t.startsWith("[") && t.endsWith("]"));
     }
 
-    /** Hvis modellen har skrevet prose rundt, plukk ut første JSON-objekt/array. */
+   // Prøv å finne et JSON-objekt eller array i en streng
     private String tryExtractFirstJsonBlock(String s) {
         if (s == null) return "";
         String t = s.trim();
@@ -83,7 +88,7 @@ public class OpenAIQuizService {
         return "";
     }
 
-    /** Et ekstra kall som tvinger JSON-only. */
+   // Forsøk å få modellen til å svare med gyldig JSON
     private String forceJson(String prompt) {
         ResponseCreateParams params = ResponseCreateParams.builder()
                 .model(resolveChatModel(model))
@@ -98,6 +103,7 @@ public class OpenAIQuizService {
         return extractText(resp);
     }
 
+    // genererer quiz
     public QuizDTO generateQuiz(GenerateQuizRequest req) {
         String system = loadSystemPrompt();
 
@@ -173,6 +179,7 @@ public class OpenAIQuizService {
         }
     }
 
+    // Bygg en enkel fallback-quiz
     private QuizDTO buildFallbackQuiz(GenerateQuizRequest req) {
         QuizDTO quiz = new QuizDTO();
         quiz.title = "Nyhetsquiz (fallback)";

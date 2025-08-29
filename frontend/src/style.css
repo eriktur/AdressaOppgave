@@ -10,7 +10,7 @@
   --danger: #f87171;
 }
 
-/* Viktig: ikke lås høyden til viewport – bruk min-height */
+
 *{ box-sizing: border-box }
 html, body, #app { min-height: 100%; }
 html, body { height: auto; }
@@ -19,10 +19,9 @@ body{
   margin:0;
   color:var(--text);
   font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  background: var(--bg); /* basefarge */
+  background: var(--bg);
 }
 
-/* Fast overlay-gradient som alltid dekker hele vinduet (ingen “restart”) */
 body::before{
   content:"";
   position: fixed;

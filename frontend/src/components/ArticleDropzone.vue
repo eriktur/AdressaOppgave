@@ -70,7 +70,7 @@ const MAX_FILES = 3
 
 const fileInput = ref(null)
 const isDragging = ref(false)
-const files = ref([]) // [{ file, name, size, parsed, error }]
+const files = ref([])
 const note = ref('')
 
 // Åpne filvelger
@@ -89,7 +89,6 @@ function onDrop(e){
   if (e.dataTransfer?.files) pushFiles(e.dataTransfer.files)
 }
 
-// Legg til filer (dedupe på navn, cap = MAX_FILES)
 function pushFiles(list){
   note.value = ''
   const incoming = Array.from(list)
@@ -156,7 +155,7 @@ function pretty(bytes){
 </script>
 
 <style scoped>
-/* Tilpasser seg dine eksisterende .card/.vstack/.btn-stiler, men gjør feltet mer “premium” */
+
 .dropzone {
   background: transparent;
   padding: 16px;

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
 import java.util.List;
 
+// Modeller for quiz-generering
 public class QuizModels {
     public static class GenerateQuizRequest {
         public List<Object> articles;
@@ -13,6 +14,7 @@ public class QuizModels {
         public String locale = "nb-NO";
     }
 
+    // DTO for quiz-resultat
     public static class QuizDTO {
         public String title;
         public String locale;
@@ -20,11 +22,13 @@ public class QuizModels {
         public Meta meta;
     }
 
+    // Metadata om quiz-genereringen
     public static class Meta {
         public Instant createdAt;
         public List<String> sourceIds;
     }
 
+    // Enkelt spørsmål
     public static class Question {
         public String id;
         public String sourceId;

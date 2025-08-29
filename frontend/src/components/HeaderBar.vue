@@ -6,12 +6,8 @@
           <path d="M4 6h16M4 12h16M4 18h16" stroke="#60a5fa" stroke-width="2" stroke-linecap="round"/>
         </svg>
         <strong>Nyhetsquiz</strong>
-        <span class="badge">Vue 3</span>
       </div>
-      <div class="hstack small" style="gap:8px;color:var(--muted)">
-        <span class="kbd">⌘</span><span>+</span><span class="kbd">K</span>
-        <span class="small">for å fokusere søk (ikke aktivert)</span>
-      </div>
+
     </div>
   </header>
 </template>
